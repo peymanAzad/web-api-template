@@ -7,7 +7,7 @@ export const sendRefreshToken = async (user: User, res: Response) => {
 		{ userId: user.id, tokenVersion: user.tokenVersion },
 		process.env.REFRESH_TOKEN_SECRET!,
 		{
-			expiresIn: "7d",
+			expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d",
 		}
 	);
 	res.cookie(cookieName, token, {

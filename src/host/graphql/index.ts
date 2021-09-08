@@ -4,19 +4,13 @@ import { Express } from "express";
 import { IAuthService } from "../../services.contracts/auth/IAuthService";
 import { UserResolver } from "./resolvers/userResolver";
 import { ApolloServer } from "apollo-server-express";
-import cors from "cors";
 
 const api = async (app: Express, authService: IAuthService) => {
 	const schema = await buildSchema({
 		resolvers: [UserResolver],
 		validate: false,
 	});
-	app.use(
-		cors({
-			origin: "http://localhost:3000",
-			credentials: true,
-		})
-	);
+
 	const server = new ApolloServer({
 		schema,
 		context: ({ req, res }): Context => ({

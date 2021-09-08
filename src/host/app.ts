@@ -3,10 +3,22 @@ import { AuthService } from "../services/authService";
 import graphqlApi from "./graphql";
 import restApi from "./restApi";
 import auth from "./auth";
+import { cookieName } from "./auth/authConfig";
+import cors from "cors";
 
 const createApp = async (port: number) => {
 	const app = express();
 	const authService = new AuthService();
+
+	const corsHost = process.env.CORS_CLIENT_HOST;
+	if (cookieName) {
+		app.use(
+			cors({
+				origin: corsHost,
+				credentials: true,
+			})
+		);
+	}
 
 	await auth(app, authService);
 	await graphqlApi(app, authService);
