@@ -1,0 +1,55 @@
+import { Express } from "express";
+import { IAuthService } from "../../services.contracts/auth/IAuthService";
+import { User } from "../../entities/User";
+import { cookieName, jwtVerifyPromise } from "./authConfig";
+import { sendRefreshToken } from "./sendRefreshToken";
+import { createAccessToken } from "./createAccessToken";
+
+declare global {
+	namespace Express {
+		interface Request {
+			user: User | undefined;
+			isAuthenticated: boolean;
+		}
+	}
+}
+
+export const authCtrl = (app: Express, authService: IAuthService) => {
+	app.get("/", function (_, res) {
+		res.send("hello world");
+	});
+
+	app.post("/refresh_token", async (req, res) => {
+		const token = req.cookies[cookieName];
+		if (!token) {
+			return res.status(400).send({ ok: false, accessToken: "" });
+		}
+
+		let payload: any = null;
+		try {
+			payload = await jwtVerifyPromise(
+				token,
+				process.env.REFRESH_TOKEN_SECRET!
+			);
+		} catch (err) {
+			console.log(err);
+			return res.send({ ok: false, accessToken: "" });
+		}
+
+		// token is valid and
+		// we can send back an access token
+		const user = await authService.getById(payload.userId);
+
+		if (!user) {
+			return res.send({ ok: false, accessToken: "" });
+		}
+
+		if (user.tokenVersion !== payload.tokenVersion) {
+			return res.send({ ok: false, accessToken: "" });
+		}
+
+		sendRefreshToken(user, res);
+
+		return res.send({ ok: true, accessToken: await createAccessToken(user) });
+	});
+};

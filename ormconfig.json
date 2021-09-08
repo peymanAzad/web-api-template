@@ -1,0 +1,12 @@
+{
+	"type": "postgres",
+	"host": "localhost",
+	"port": 5432,
+	"username": "postgres",
+	"password": "123",
+	"database": "webApi",
+	"synchronize": true,
+	"logging": true,
+	"entities": ["dist/entities/**/*.js"],
+	"migrations": ["dist/dataAccess/migrations/**/*.js"]
+}
