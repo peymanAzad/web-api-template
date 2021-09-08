@@ -3,7 +3,6 @@ import { AuthService } from "../services/authService";
 import graphqlApi from "./graphql";
 import restApi from "./restApi";
 import auth from "./auth";
-import { cookieName } from "./auth/authConfig";
 import cors from "cors";
 
 const createApp = async (port: number) => {
@@ -11,7 +10,7 @@ const createApp = async (port: number) => {
 	const authService = new AuthService();
 
 	const corsHost = process.env.CORS_CLIENT_HOST;
-	if (cookieName) {
+	if (corsHost) {
 		app.use(
 			cors({
 				origin: corsHost,
