@@ -1,7 +1,11 @@
 import { Express } from "express";
 import { IAuthService } from "../../services.contracts/auth/IAuthService";
 import { User } from "../../entities/User";
-import { cookieName, jwtVerifyPromise } from "./authConfig";
+import {
+	cookieName,
+	createAuthMiddleware,
+	jwtVerifyPromise,
+} from "./authConfig";
 import { sendRefreshToken } from "./sendRefreshToken";
 import { createAccessToken } from "./createAccessToken";
 
@@ -15,8 +19,24 @@ declare global {
 }
 
 export const authCtrl = (app: Express, authService: IAuthService) => {
+	const authMiddleware = createAuthMiddleware({}, authService);
+
 	app.get("/", function (_, res) {
 		res.send("hello world");
+	});
+
+	app.post("/revoke_refresh_token", authMiddleware, async (req, res) => {
+		if (!req.isAuthenticated || !req.user) {
+			return res.sendStatus(401);
+		}
+
+		try {
+			const result = await authService.increamentTokenVersion(req.user.id);
+			return res.send(result);
+		} catch (err) {
+			console.log(err);
+			return res.sendStatus(500);
+		}
 	});
 
 	app.post("/refresh_token", async (req, res) => {
